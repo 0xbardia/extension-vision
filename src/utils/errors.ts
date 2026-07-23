@@ -20,6 +20,7 @@ export type ErrorCode =
   | 'PROVIDER_EMPTY_RESPONSE'
   | 'RESPONSE_PARSE'
   | 'RESPONSE_SCHEMA'
+  | 'REQUEST_CANCELLED'
   | 'UNKNOWN';
 export type ErrorInfo = {
   code: ErrorCode;

@@ -7,8 +7,10 @@ import { providerFactory } from '../providers/provider-factory';
 import { AppError, errorInfo, userMessage } from '../utils/errors';
 import { isKnownProtectedUrl, resolveTargetTab, tabProtocol } from './target-tab';
 import { openPanelFromUserGesture } from './command-flow';
-import { buildVisionPrompt } from '../prompt/default-prompt';
+import { buildFinalPrompt } from '../prompt/default-prompt';
+import { PRESETS } from '../prompt/presets';
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
+let activeController: AbortController | undefined;
 chrome.commands.onCommand.addListener((command, tab) => {
   if (command === 'solve-visible-page')
     openPanelFromUserGesture(
@@ -19,6 +21,11 @@ chrome.commands.onCommand.addListener((command, tab) => {
     );
 });
 chrome.runtime.onMessage.addListener((m, s, send) => {
+  if (m?.type === 'CANCEL_SOLVE') {
+    activeController?.abort();
+    send({ ok: true });
+    return false;
+  }
   if (m?.type === 'SOLVE_CURRENT_PAGE') {
     startSolve()
       .then(() => send({ ok: true }))
@@ -50,9 +57,12 @@ async function recordPanelOpenError(error: unknown) {
 }
 
 async function startSolve(options: { preferredTab?: chrome.tabs.Tab } = {}) {
+  const controller = new AbortController();
+  activeController = controller;
+  const previousState = await getCurrentSolveState();
   const requestId = crypto.randomUUID();
   let providerName: 'OpenAI' | 'OpenRouter' = 'OpenRouter';
-  const started = Date.now();
+  const started = performance.now();
   const log = (stage: string, tab?: chrome.tabs.Tab) =>
     console.info(
       '[solve]',
@@ -62,7 +72,12 @@ async function startSolve(options: { preferredTab?: chrome.tabs.Tab } = {}) {
       tab ? { tabId: tab.id, windowId: tab.windowId, protocol: tabProtocol(tab.url) } : '',
     );
   log('solve requested');
-  await setCurrentSolveState({ status: 'loading', requestId, startedAt: Date.now() });
+  await setCurrentSolveState({
+    status: 'loading',
+    requestId,
+    startedAt: Date.now(),
+    stage: 'preparing',
+  });
   try {
     let tab: chrome.tabs.Tab;
     try {
@@ -100,6 +115,7 @@ async function startSolve(options: { preferredTab?: chrome.tabs.Tab } = {}) {
     if (!settings.prompt.trim())
       throw new AppError('PROMPT_MISSING', 'متن prompt نمی‌تواند خالی باشد.');
     let image: string;
+    await setCurrentSolveState({ status: 'loading', requestId, stage: 'capturing' });
     try {
       image = await chrome.tabs.captureVisibleTab(tab.windowId, {
         format: 'jpeg',
@@ -114,23 +130,53 @@ async function startSolve(options: { preferredTab?: chrome.tabs.Tab } = {}) {
       );
     }
     log('screenshot capture', tab);
+    await setCurrentSolveState({ status: 'loading', requestId, stage: 'sending' });
     log('provider request started');
+    const effectiveInstruction =
+      settings.presetOverrides[settings.selectedPresetId] ??
+      (settings.customPrompt || settings.prompt);
     const answer = await providerFactory(settings.provider).solveScreenshot({
       screenshotDataUrl: image,
-      prompt: buildVisionPrompt(settings.prompt),
+      prompt: buildFinalPrompt(
+        PRESETS[settings.selectedPresetId as keyof typeof PRESETS]?.instruction ?? '',
+        effectiveInstruction,
+      ),
       model,
       apiKey: key,
       timeoutMs: settings.requestTimeoutMs,
+      signal: controller.signal,
     });
     const current = await getCurrentSolveState();
     if (current.requestId === requestId) {
       log('response parsed and schema validated');
-      await setCurrentSolveState({ status: 'success', requestId, answer });
+      await setCurrentSolveState({
+        status: 'success',
+        requestId,
+        answer,
+        stage: 'completed',
+        metadata: { provider: providerName, model },
+        timings: { totalDurationMs: Math.round(performance.now() - started) },
+      });
       log('state stored');
     }
   } catch (e) {
     const current = await getCurrentSolveState();
     if (current.requestId === requestId) {
+      if (controller.signal.aborted) {
+        await setCurrentSolveState({
+          status: 'error',
+          requestId,
+          error: 'درخواست متوقف شد.',
+          errorInfo: {
+            code: 'REQUEST_CANCELLED',
+            detail: 'user cancelled',
+            provider: providerName,
+            stage: 'cancelling',
+          },
+          stage: 'cancelled',
+        });
+        return;
+      }
       const info = errorInfo(e, providerName);
       console.error('[solve]', info);
       await setCurrentSolveState({
@@ -138,6 +184,14 @@ async function startSolve(options: { preferredTab?: chrome.tabs.Tab } = {}) {
         requestId,
         error: userMessage(e),
         errorInfo: info,
+        previous:
+          previousState.status === 'success' && previousState.answer
+            ? {
+                answer: previousState.answer,
+                metadata: previousState.metadata,
+                timings: previousState.timings,
+              }
+            : undefined,
       });
       log('state stored');
     }

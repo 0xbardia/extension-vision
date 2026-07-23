@@ -3,7 +3,7 @@ import path from 'node:path';
 import yazl from 'yazl';
 import { execFileSync } from 'node:child_process';
 execFileSync('node', ['scripts/verify-dist.mjs'], { stdio: 'inherit' });
-const out = 'ai-vision-sidebar-v0.1.0.zip';
+const out = 'ai-vision-sidebar-v0.2.0.zip';
 if (fs.existsSync(out)) fs.unlinkSync(out);
 const zip = new yazl.ZipFile();
 function add(dir, base = '') {

@@ -21,6 +21,10 @@ export type Settings = {
   prompt: string;
   requestTimeoutMs: number;
   imageQuality: number;
+  selectedPresetId: string;
+  presetOverrides: Record<string, string>;
+  customPrompt: string;
+  settingsUiExpanded: boolean;
 };
 export type SolveState = {
   status: 'idle' | 'loading' | 'success' | 'error';
@@ -29,4 +33,25 @@ export type SolveState = {
   error?: string;
   errorInfo?: { code: string; detail: string; provider?: string; stage: string; status?: number };
   startedAt?: number;
+  stage?:
+    | 'preparing'
+    | 'capturing'
+    | 'sending'
+    | 'analyzing'
+    | 'parsing'
+    | 'completed'
+    | 'cancelling'
+    | 'cancelled';
+  timings?: {
+    captureDurationMs?: number;
+    providerDurationMs?: number;
+    parseDurationMs?: number;
+    totalDurationMs?: number;
+  };
+  metadata?: { provider: string; model: string };
+  previous?: {
+    answer: VisionAnswer;
+    metadata?: SolveState['metadata'];
+    timings?: SolveState['timings'];
+  };
 };

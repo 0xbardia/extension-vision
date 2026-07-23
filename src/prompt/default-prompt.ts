@@ -4,3 +4,6 @@ export const DEFAULT_PROMPT =
 export function buildVisionPrompt(customInstruction: string) {
   return `${MANDATORY_OUTPUT_CONTRACT}\n\nUser custom instruction:\n${customInstruction.trim() || DEFAULT_PROMPT}\n\nRepeat: output only one JSON object matching the schema. JSON only.`;
 }
+export function buildFinalPrompt(presetInstruction: string, customInstruction: string) {
+  return buildVisionPrompt(`${presetInstruction}\n\n${customInstruction}`);
+}

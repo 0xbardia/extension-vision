@@ -1,6 +1,27 @@
 {
   "name": "ai-vision-sidebar",
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "description": "A Chrome Manifest V3 AI Vision extension for screenshot analysis in the Chrome Side Panel.",
+  "license": "MIT",
+  "keywords": [
+    "chrome-extension",
+    "manifest-v3",
+    "ai",
+    "vision",
+    "openrouter",
+    "openai",
+    "typescript",
+    "sidebar",
+    "screenshot"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0xbardia/extension-vision.git"
+  },
+  "homepage": "https://github.com/0xbardia/extension-vision#readme",
+  "bugs": {
+    "url": "https://github.com/0xbardia/extension-vision/issues"
+  },
   "private": true,
   "type": "module",
   "scripts": {

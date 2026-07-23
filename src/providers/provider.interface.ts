@@ -5,6 +5,7 @@ export type SolveInput = {
   model: string;
   apiKey: string;
   timeoutMs: number;
+  signal?: AbortSignal;
 };
 export interface VisionProvider {
   solveScreenshot(input: SolveInput): Promise<VisionAnswer>;

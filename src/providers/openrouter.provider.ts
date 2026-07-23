@@ -84,7 +84,7 @@ export class OpenRouterProvider implements VisionProvider {
             },
           ],
         }),
-        signal: controller.signal,
+        signal: i.signal ?? controller.signal,
       });
       const body: unknown = await r.json().catch(() => ({}));
       if (!r.ok) throw mapStatus(r.status, safeDetail(body));
@@ -127,7 +127,7 @@ export class OpenRouterProvider implements VisionProvider {
               },
             ],
           }),
-          signal: controller.signal,
+          signal: i.signal ?? controller.signal,
         });
         const repairBody: unknown = await repair.json().catch(() => ({}));
         if (!repair.ok) throw mapStatus(repair.status, safeDetail(repairBody));

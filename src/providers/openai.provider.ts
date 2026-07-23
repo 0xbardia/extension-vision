@@ -24,7 +24,7 @@ export class OpenAIProvider implements VisionProvider {
           temperature: 0,
           max_output_tokens: 300,
         }),
-        signal: controller.signal,
+        signal: i.signal ?? controller.signal,
       });
       const body: unknown = await response.json().catch(() => ({}));
       if (!response.ok)

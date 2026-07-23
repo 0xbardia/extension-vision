@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "AI Vision Sidebar",
-  "version": "0.1.0",
-  "description": "Solve the visible page with your chosen vision provider.",
+  "name": "Extension Vision",
+  "version": "0.2.0",
+  "description": "A Chrome Manifest V3 AI Vision extension for screenshot analysis in the Chrome Side Panel.",
   "minimum_chrome_version": "116",
   "permissions": ["activeTab", "storage", "sidePanel", "tabs"],
   "host_permissions": ["<all_urls>", "https://openrouter.ai/*", "https://api.openai.com/*"],
   "background": { "service_worker": "service-worker.js", "type": "module" },
-  "action": { "default_title": "Open AI Vision Sidebar" },
+  "action": { "default_title": "Open Extension Vision" },
   "side_panel": { "default_path": "src/sidepanel/sidepanel.html" },
   "commands": {
     "solve-visible-page": {

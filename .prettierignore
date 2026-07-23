@@ -1,3 +1,5 @@
 dist
+dist-v0.1.0-stable
+dist-v0.2.0
 node_modules
 *.zip

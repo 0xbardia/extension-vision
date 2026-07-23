@@ -15,40 +15,49 @@
         <span id="statusDot" class="dot" aria-label="Ready"></span>
       </header>
       <section aria-labelledby="settings-title">
-        <div class="section-head">
-          <h2 id="settings-title">Settings</h2>
-          <span id="saved" role="status"></span>
-        </div>
-        <label
-          >Provider<select id="provider">
-            <option value="openrouter">OpenRouter</option>
-            <option value="openai">OpenAI Direct</option>
-          </select></label
-        ><label
-          >API key
-          <div class="key-row">
-            <input id="apiKey" type="password" autocomplete="off" /><button
-              id="toggleKey"
-              class="icon-btn"
-              type="button"
-              aria-label="Show API key"
-            >
-              Show
-            </button>
-          </div></label
-        ><label
-          >Vision model<input
-            id="model"
-            placeholder="Enter a currently available image-capable model" /></label
-        ><label>Custom prompt<textarea id="prompt" rows="7"></textarea></label>
-        <div class="actions">
-          <button id="save" class="primary" type="button">Save settings</button
-          ><button id="reset" type="button">Reset prompt</button>
+        <button id="settingsToggle" type="button" aria-expanded="true" aria-controls="settingsBody">
+          Settings⌄
+        </button>
+        <div id="settingsBody">
+          <div class="section-head">
+            <h2 id="settings-title">Settings</h2>
+            <span id="saved" role="status"></span>
+          </div>
+          <label
+            >Provider<select id="provider">
+              <option value="openrouter">OpenRouter</option>
+              <option value="openai">OpenAI Direct</option>
+            </select></label
+          ><label
+            >API key
+            <div class="key-row">
+              <input id="apiKey" type="password" autocomplete="off" /><button
+                id="toggleKey"
+                class="icon-btn"
+                type="button"
+                aria-label="Show API key"
+              >
+                Show
+              </button>
+            </div></label
+          ><label
+            >Vision model<input
+              id="model"
+              placeholder="Enter a currently available image-capable model" /></label
+          ><label>Prompt preset<select id="preset"></select></label
+          ><small id="presetDescription"></small
+          ><label id="promptLabel">Prompt<textarea id="prompt" rows="7"></textarea></label
+          ><small>قوانین JSON و فرمت خروجی به‌صورت خودکار اعمال می‌شوند.</small>
+          <div class="actions">
+            <button id="save" class="primary" type="button">Save settings</button
+            ><button id="reset" type="button">Reset prompt</button>
+          </div>
         </div>
       </section>
       <section aria-labelledby="solve-title">
         <div class="section-head"><h2 id="solve-title">Solve</h2></div>
-        <button id="solve" class="solve" type="button">Solve current page</button>
+        <button id="solve" class="solve" type="button">Solve current page</button
+        ><button id="stop" type="button" hidden>در حال توقف…</button>
         <div id="loading" class="loading" hidden>
           <span class="spinner"></span><span>Reading the visible page…</span>
         </div>
@@ -69,6 +78,10 @@
             <dd id="confidence"></dd>
           </dl>
           <p id="warning" class="warning" hidden></p>
+          <button id="copy" type="button">کپی پاسخ</button
+          ><span id="copyStatus" role="status" aria-live="polite"></span>
+          <p id="timing"></p>
+          <p id="metadata"></p>
         </article>
         <article id="error" class="error" hidden>
           <strong>Couldn’t solve this page</strong>
@@ -78,6 +91,10 @@
             <summary>Technical details</summary>
             <pre id="errorDetails"></pre>
           </details>
+        </article>
+        <article id="previous" class="result" hidden>
+          <div class="result-label">آخرین پاسخ موفق</div>
+          <p id="previousAnswer"></p>
         </article>
       </section>
     </main>
