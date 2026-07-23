@@ -1,6 +1,6 @@
 {
   "name": "ai-vision-sidebar",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "A Chrome Manifest V3 AI Vision extension for screenshot analysis in the Chrome Side Panel.",
   "license": "MIT",
   "keywords": [
