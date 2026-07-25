@@ -217,3 +217,275 @@ dd {
     animation: none;
   }
 }
+
+/* ── Section Toggle ──────────────────────────────────────────────── */
+
+.section-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink);
+  font: 650 12px inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.section-toggle:hover {
+  border-color: var(--primary);
+}
+
+.section-toggle:focus-visible {
+  outline: 3px solid color-mix(in oklch, var(--primary) 35%, transparent);
+  outline-offset: 2px;
+}
+
+.experimental-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: auto;
+}
+
+/* ── Master Toggle ────────────────────────────────────────────────── */
+
+.master-toggle-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin: 0;
+}
+
+.master-toggle-label input[type='checkbox'] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-switch {
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+  background: var(--line);
+  border-radius: 9px;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+input[type='checkbox']:checked + .toggle-switch {
+  background: var(--primary);
+}
+
+input[type='checkbox']:checked + .toggle-switch::after {
+  transform: translateX(14px);
+}
+
+input[type='checkbox']:focus-visible + .toggle-switch {
+  outline: 3px solid color-mix(in oklch, var(--primary) 35%, transparent);
+  outline-offset: 2px;
+}
+
+/* ── Knowledge Section ────────────────────────────────────────────── */
+
+.knowledge-controls {
+  margin: 10px 0;
+}
+
+.knowledge-controls button {
+  width: 100%;
+}
+
+.knowledge-privacy-notice {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 2px 0 0;
+  line-height: 1.4;
+}
+
+.knowledge-privacy-notice.secondary {
+  font-size: 10px;
+  opacity: 0.75;
+  margin-top: 4px;
+}
+
+.knowledge-message {
+  font-size: 12px;
+  margin: 8px 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  display: none;
+}
+
+.knowledge-message.info {
+  display: block;
+  background: color-mix(in oklch, var(--primary) 10%, transparent);
+  color: var(--ink);
+}
+
+.knowledge-message.error {
+  display: block;
+  background: color-mix(in oklch, var(--danger) 10%, transparent);
+  color: var(--danger);
+}
+
+.knowledge-message.warning {
+  display: block;
+  background: color-mix(in oklch, #b8860b 10%, transparent);
+  color: #b8860b;
+}
+
+.knowledge-message.importing {
+  display: block;
+  background: color-mix(in oklch, var(--primary) 8%, transparent);
+  color: var(--muted);
+}
+
+.knowledge-usage,
+.knowledge-doc-count {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 2px 0;
+}
+
+.knowledge-empty {
+  padding: 16px 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+.knowledge-empty p {
+  margin: 0 0 4px;
+  font-size: 12px;
+}
+
+/* ── Document List ────────────────────────────────────────────────── */
+
+.knowledge-doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.knowledge-doc-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  min-height: 44px;
+}
+
+.knowledge-doc-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.knowledge-doc-name {
+  font-size: 12px;
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.knowledge-doc-meta {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.knowledge-doc-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.knowledge-doc-toggle-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin: 0;
+}
+
+.knowledge-doc-toggle-label input[type='checkbox'] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.knowledge-doc-toggle-label .toggle-switch {
+  width: 28px;
+  height: 16px;
+}
+
+.knowledge-doc-toggle-label .toggle-switch::after {
+  width: 12px;
+  height: 12px;
+}
+
+.knowledge-doc-toggle-label input[type='checkbox']:checked + .toggle-switch::after {
+  transform: translateX(12px);
+}
+
+.knowledge-doc-delete {
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--danger);
+  border-color: color-mix(in oklch, var(--danger) 30%, var(--line));
+}
+
+.knowledge-doc-delete:hover {
+  border-color: var(--danger);
+  background: color-mix(in oklch, var(--danger) 8%, transparent);
+}
+
+.knowledge-doc-delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Disabled State ───────────────────────────────────────────────── */
+
+.knowledge-disabled .knowledge-doc-item {
+  opacity: 0.5;
+}
+
+.knowledge-disabled .knowledge-doc-toggle-label {
+  cursor: not-allowed;
+}
+
+.knowledge-disabled .knowledge-doc-delete {
+  pointer-events: auto; /* still allow delete when disabled */
+}

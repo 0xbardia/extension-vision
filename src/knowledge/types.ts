@@ -12,7 +12,19 @@ export type KnowledgeErrorCode =
   | 'KNOWLEDGE_CORRUPTED_RECORD'
   | 'KNOWLEDGE_STORAGE_FAILURE'
   | 'KNOWLEDGE_SETTINGS_CORRUPTED'
-  | 'KNOWLEDGE_VALIDATION_FAILED';
+  | 'KNOWLEDGE_VALIDATION_FAILED'
+  /* Import-specific error codes */
+  | 'KNOWLEDGE_UNSUPPORTED_EXTENSION'
+  | 'KNOWLEDGE_UNSUPPORTED_MIME'
+  | 'KNOWLEDGE_FILE_TOO_LARGE'
+  | 'KNOWLEDGE_INVALID_UTF8'
+  | 'KNOWLEDGE_EMPTY_DOCUMENT'
+  | 'KNOWLEDGE_SUSPICIOUS_CONTROLS'
+  | 'KNOWLEDGE_FILENAME_TOO_LONG'
+  | 'KNOWLEDGE_DOCUMENT_COUNT_LIMIT'
+  | 'KNOWLEDGE_STORAGE_SIZE_LIMIT'
+  | 'KNOWLEDGE_BIDI_OVERRIDE'
+  | 'KNOWLEDGE_IMPORT_ERROR';
 
 /** A document imported into the local knowledge base */
 export interface KnowledgeDocumentRecord {
@@ -74,6 +86,13 @@ export interface KnowledgeStorageUsage {
   chunkCount: number;
   estimatedBytes: number;
 }
+
+/** Result of importing a single file */
+export type KnowledgeImportResult =
+  | { status: 'imported'; fileName: string; documentId: string }
+  | { status: 'duplicate'; fileName: string; existingFileName?: string }
+  | { status: 'rejected'; fileName: string; reason: string }
+  | { status: 'failed'; fileName: string; reason: string };
 
 /** Database name */
 export const KNOWLEDGE_DB_NAME = 'extension-vision-knowledge';

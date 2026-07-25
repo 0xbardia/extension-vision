@@ -3,6 +3,7 @@ import { DEFAULT_PROMPT } from '../prompt/default-prompt';
 import { getSettings, saveSettings, getCurrentSolveState } from '../storage/settings.storage';
 import type { ProviderId, SolveState, Settings } from '../types';
 import { PRESETS, PRESET_IDS } from '../prompt/presets';
+import { initializeKnowledgePanel } from '../knowledge/ui';
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const provider = $<HTMLSelectElement>('provider'),
   key = $<HTMLInputElement>('apiKey'),
@@ -206,3 +207,4 @@ async function render(s: SolveState) {
   }
 }
 void load();
+void initializeKnowledgePanel();

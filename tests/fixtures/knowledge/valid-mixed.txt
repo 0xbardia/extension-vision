@@ -1,0 +1,10 @@
+This is a mixed English and Persian file for testing.
+
+Hello world!
+سلام دنیا!
+
+Numbers: 12345
+اعداد: ۱۲۳۴۵
+
+Goodbye.
+خداحافظ.

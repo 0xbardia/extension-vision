@@ -15,8 +15,14 @@
         <span id="statusDot" class="dot" aria-label="Ready"></span>
       </header>
       <section aria-labelledby="settings-title">
-        <button id="settingsToggle" type="button" aria-expanded="true" aria-controls="settingsBody">
-          Settings⌄
+        <button
+          id="settingsToggle"
+          type="button"
+          aria-expanded="true"
+          aria-controls="settingsBody"
+          class="section-toggle"
+        >
+          Settings ⌄
         </button>
         <div id="settingsBody">
           <div class="section-head">
@@ -52,6 +58,51 @@
             <button id="save" class="primary" type="button">Save settings</button
             ><button id="reset" type="button">Reset prompt</button>
           </div>
+        </div>
+      </section>
+      <section id="knowledgeSection" aria-labelledby="knowledge-title">
+        <button
+          id="knowledgeToggle"
+          type="button"
+          aria-expanded="true"
+          aria-controls="knowledgeBody"
+          class="section-toggle"
+        >
+          Local Knowledge ⌄
+          <span class="experimental-badge">Experimental</span>
+        </button>
+        <div id="knowledgeBody">
+          <div class="section-head">
+            <h2 id="knowledge-title">Local Knowledge</h2>
+            <label class="master-toggle-label" aria-label="Enable Local Knowledge">
+              <input id="knowledgeEnabled" type="checkbox" role="switch" />
+              <span class="toggle-switch"></span>
+            </label>
+          </div>
+          <p class="knowledge-privacy-notice">
+            Files are stored locally in this browser. They are not used in AI requests yet.
+          </p>
+          <p class="knowledge-privacy-notice secondary">
+            Future Local Knowledge queries may send selected excerpts to your configured AI
+            provider.
+          </p>
+          <div class="knowledge-controls">
+            <button id="knowledgeImportBtn" type="button" class="primary">Import .txt</button>
+            <input id="knowledgeFileInput" type="file" accept=".txt,text/plain" multiple hidden />
+          </div>
+          <div
+            id="knowledgeStatus"
+            class="knowledge-message"
+            role="status"
+            aria-live="polite"
+          ></div>
+          <div id="knowledgeUsage" class="knowledge-usage"></div>
+          <div id="knowledgeDocCount" class="knowledge-doc-count"></div>
+          <div id="knowledgeEmpty" class="knowledge-empty">
+            <p>No local documents yet.</p>
+            <p>Import a UTF-8 .txt file to begin.</p>
+          </div>
+          <div id="knowledgeDocList" class="knowledge-doc-list"></div>
         </div>
       </section>
       <section aria-labelledby="solve-title">

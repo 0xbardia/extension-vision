@@ -1,0 +1,5 @@
+Hello, this is a valid English text file for testing.
+
+It has multiple lines.
+
+And some trailing content.
