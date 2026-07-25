@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Extension Vision",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "A Chrome Manifest V3 AI Vision extension for screenshot analysis in the Chrome Side Panel.",
   "minimum_chrome_version": "116",
   "permissions": ["activeTab", "storage", "sidePanel", "tabs"],
