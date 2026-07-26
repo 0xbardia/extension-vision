@@ -176,3 +176,28 @@ export interface KnowledgeRetrievalResult {
     | 'no-processed-chunks'
     | 'no-match';
 }
+
+// ─── Context Builder Types ──────────────────────────────────────────
+
+export type KnowledgeContextStatus =
+  'included' | 'disabled' | 'no-query' | 'no-match' | 'unavailable' | 'failed';
+
+export interface KnowledgeContextResult {
+  status: KnowledgeContextStatus;
+  text: string;
+  sourceCount: number;
+  chunkCount: number;
+  characterCount: number;
+  /** Internal only — do not expose to providers */
+  documentIds: string[];
+  errorCode?: string;
+}
+
+export interface SolveKnowledgeMetadata {
+  included: boolean;
+  status: string;
+  sourceCount: number;
+  chunkCount: number;
+  characterCount: number;
+  buildDurationMs: number;
+}

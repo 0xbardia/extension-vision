@@ -9,6 +9,7 @@ import { isKnownProtectedUrl, resolveTargetTab, tabProtocol } from './target-tab
 import { openPanelFromUserGesture } from './command-flow';
 import { buildFinalPrompt } from '../prompt/default-prompt';
 import { PRESETS } from '../prompt/presets';
+import { buildKnowledgeContext } from '../knowledge/context-builder';
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
 let activeController: AbortController | undefined;
 chrome.commands.onCommand.addListener((command, tab) => {
@@ -135,12 +136,48 @@ async function startSolve(options: { preferredTab?: chrome.tabs.Tab } = {}) {
     const effectiveInstruction =
       settings.presetOverrides[settings.selectedPresetId] ??
       (settings.customPrompt || settings.prompt);
+
+    // ── Local Knowledge integration (Phase 3) ────────────────────
+    let knowledgeBlock = '';
+    const presetInstruction =
+      PRESETS[settings.selectedPresetId as keyof typeof PRESETS]?.instruction ?? '';
+    let knowledgeMeta: import('../knowledge/types').SolveKnowledgeMetadata | undefined;
+
+    try {
+      const knowledgeStartedAt = performance.now();
+      const context = await buildKnowledgeContext(effectiveInstruction, presetInstruction);
+      if (context.status === 'included' && context.text) {
+        knowledgeBlock = '\n\n' + context.text;
+      }
+      knowledgeMeta = {
+        included: context.status === 'included',
+        status: context.status,
+        sourceCount: context.sourceCount,
+        chunkCount: context.chunkCount,
+        characterCount: context.characterCount,
+        buildDurationMs: Math.round(performance.now() - knowledgeStartedAt),
+      };
+    } catch {
+      // Knowledge failure never breaks Solve
+      knowledgeMeta = {
+        included: false,
+        status: 'failed',
+        sourceCount: 0,
+        chunkCount: 0,
+        characterCount: 0,
+        buildDurationMs: 0,
+      };
+    }
+
+    // ── Provider request ─────────────────────────────────────────
+    log('provider request started', tab);
     const answer = await providerFactory(settings.provider).solveScreenshot({
       screenshotDataUrl: image,
-      prompt: buildFinalPrompt(
-        PRESETS[settings.selectedPresetId as keyof typeof PRESETS]?.instruction ?? '',
-        effectiveInstruction,
-      ),
+      prompt:
+        buildFinalPrompt(
+          PRESETS[settings.selectedPresetId as keyof typeof PRESETS]?.instruction ?? '',
+          effectiveInstruction,
+        ) + knowledgeBlock,
       model,
       apiKey: key,
       timeoutMs: settings.requestTimeoutMs,

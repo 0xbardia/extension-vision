@@ -82,3 +82,12 @@ export function closeKnowledgeDatabase(): void {
     dbCache = null;
   }
 }
+
+/**
+ * @internal Test-only helper. Resets the cached database connection
+ * without closing it. Required when tests delete and recreate the
+ * database between test cases.
+ */
+export function resetKnowledgeDatabase(): void {
+  dbCache = null;
+}
