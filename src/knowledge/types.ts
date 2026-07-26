@@ -24,7 +24,11 @@ export type KnowledgeErrorCode =
   | 'KNOWLEDGE_DOCUMENT_COUNT_LIMIT'
   | 'KNOWLEDGE_STORAGE_SIZE_LIMIT'
   | 'KNOWLEDGE_BIDI_OVERRIDE'
-  | 'KNOWLEDGE_IMPORT_ERROR';
+  | 'KNOWLEDGE_IMPORT_ERROR'
+  /* Processing-specific error codes */
+  | 'KNOWLEDGE_CHUNKING_OVERFLOW'
+  | 'KNOWLEDGE_PROCESSING_FAILED'
+  | 'KNOWLEDGE_RETRIEVAL_UNAVAILABLE';
 
 /** A document imported into the local knowledge base */
 export interface KnowledgeDocumentRecord {
@@ -99,3 +103,76 @@ export const KNOWLEDGE_DB_NAME = 'extension-vision-knowledge';
 
 /** Current database schema version */
 export const KNOWLEDGE_DB_VERSION = 1;
+
+/**
+ * Current processing version for documents and chunks.
+ * Version 1 = initial import (Phase 1.2, zero chunks)
+ * Version 2 = chunked and processed (Phase 2+)
+ */
+export const KNOWLEDGE_PROCESSING_VERSION = 2;
+
+// ─── Chunking Constants ────────────────────────────────────────────
+
+/** Target characters per chunk */
+export const CHUNK_TARGET_CHARS = 1200;
+
+/** Maximum characters per chunk */
+export const CHUNK_MAX_CHARS = 1600;
+
+/** Minimum useful characters in a chunk */
+export const CHUNK_MIN_CHARS = 200;
+
+/** Overlap characters between adjacent chunks */
+export const CHUNK_OVERLAP_CHARS = 200;
+
+/** Safety maximum chunks per document */
+export const CHUNK_MAX_PER_DOCUMENT = 500;
+
+// ─── Processing Types ──────────────────────────────────────────────
+
+export type KnowledgeProcessingResult =
+  | { status: 'processed'; documentId: string; chunkCount: number }
+  | { status: 'skipped'; documentId: string; reason: 'already-current' }
+  | { status: 'failed'; documentId: string; errorCode: string; message?: string };
+
+export interface KnowledgeProcessingStatus {
+  totalDocuments: number;
+  currentDocuments: number;
+  pendingDocuments: number;
+  failedDocuments: number;
+  totalChunks: number;
+}
+
+// ─── Retrieval Types ───────────────────────────────────────────────
+
+export interface KnowledgeRetrievalOptions {
+  maximumChunks?: number;
+  maximumCharacters?: number;
+}
+
+export interface KnowledgeRetrievalMatch {
+  chunkId: string;
+  documentId: string;
+  fileName: string;
+  chunkIndex: number;
+  text: string;
+  score: number;
+  startOffset: number;
+  endOffset: number;
+}
+
+export interface KnowledgeRetrievalResult {
+  query: string;
+  normalizedQuery: string;
+  matches: KnowledgeRetrievalMatch[];
+  totalEligibleDocuments: number;
+  totalEligibleChunks: number;
+  totalMatchedChunks: number;
+  returnedCharacters: number;
+  reason?:
+    | 'knowledge-disabled'
+    | 'query-not-meaningful'
+    | 'no-enabled-documents'
+    | 'no-processed-chunks'
+    | 'no-match';
+}

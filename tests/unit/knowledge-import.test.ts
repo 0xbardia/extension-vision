@@ -417,7 +417,7 @@ describe('buildKnowledgeDocumentRecord', () => {
     expect(record.contentHash).toBe(
       'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
     );
-    expect(record.processingVersion).toBe(1);
+    expect(record.processingVersion).toBe(2);
     expect(record.content).toBe('Normalized content');
   });
 
@@ -558,15 +558,15 @@ describe('importSingleFile', () => {
     }
   });
 
-  it('creates zero chunks', async () => {
-    const file = makeFile('zeroc.txt', 'Zero chunk test', 'text/plain');
+  it('creates chunks with processingVersion = 2', async () => {
+    const file = makeFile('version.txt', 'Version check test for processing.', 'text/plain');
     const result = await importSingleFile(file, TEST_SETTINGS, {
       documentCount: 0,
       estimatedBytes: 0,
     });
     expect(result.status).toBe('imported');
     if (result.status === 'imported') {
-      // Open the chunks store and verify count
+      // Open the chunks store and verify
       const db = await openKnowledgeDatabase();
       const tx = db.transaction('chunks', 'readonly');
       const chunkReq = tx.objectStore('chunks').index('documentId').getAll(result.documentId);
@@ -574,7 +574,8 @@ describe('importSingleFile', () => {
         chunkReq.onsuccess = () => resolve(chunkReq.result);
       });
       closeKnowledgeDatabase();
-      expect(chunks).toHaveLength(0);
+      expect(chunks.length).toBeGreaterThan(0);
+      expect(chunks[0].processingVersion).toBe(2);
     }
   });
 

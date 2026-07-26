@@ -489,3 +489,29 @@ input[type='checkbox']:focus-visible + .toggle-switch {
 .knowledge-disabled .knowledge-doc-delete {
   pointer-events: auto; /* still allow delete when disabled */
 }
+
+/* ── Processing Status ────────────────────────────────────────────── */
+
+.knowledge-processing-status {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 8px 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: color-mix(in oklch, var(--primary) 8%, transparent);
+}
+
+.knowledge-processing-status.ready {
+  background: color-mix(in oklch, var(--success) 8%, transparent);
+  color: var(--success);
+}
+
+.knowledge-processing-status.error {
+  background: color-mix(in oklch, var(--danger) 8%, transparent);
+  color: var(--danger);
+}
+
+.knowledge-processing-status.processing {
+  background: color-mix(in oklch, var(--primary) 8%, transparent);
+  color: var(--muted);
+}

@@ -23,6 +23,7 @@ import {
 } from './repository';
 import { importMultipleFiles } from './import';
 import { knowledgeErrorMessage } from './errors';
+import { processPendingKnowledgeDocuments, getKnowledgeProcessingStatus } from './processing';
 
 // ─── Selectors ──────────────────────────────────────────────────────────────
 
@@ -65,6 +66,9 @@ export async function initializeKnowledgePanel(): Promise<void> {
     // We don't persist expansion state — always expanded for simplicity
 
     await loadAndRender();
+
+    // Run backfill processing for existing v1 documents in background
+    void initializeKnowledgeProcessing();
   } catch (err) {
     console.warn('[knowledge] Failed to initialize:', knowledgeErrorMessage(err));
     showKnowledgeMessage('Local Knowledge settings could not be loaded.', 'error');
@@ -365,4 +369,64 @@ function formatByteSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+// ─── Processing Initialization ──────────────────────────────────────────────
+
+/**
+ * Initialize knowledge document processing.
+ * Runs backfill for existing v1 documents and shows status.
+ * Does not block the Side Panel.
+ */
+export async function initializeKnowledgeProcessing(): Promise<void> {
+  try {
+    const statusEl = $<HTMLElement>('knowledgeProcessingStatus');
+    const procStatus = await getKnowledgeProcessingStatus();
+
+    if (procStatus.pendingDocuments === 0 && procStatus.currentDocuments > 0) {
+      // All documents already processed
+      statusEl.textContent = 'Local documents ready';
+      statusEl.className = 'knowledge-processing-status ready';
+      statusEl.hidden = false;
+      setTimeout(() => {
+        statusEl.hidden = true;
+      }, 5000);
+      return;
+    }
+
+    if (procStatus.pendingDocuments === 0 && procStatus.totalDocuments === 0) {
+      return; // No documents at all
+    }
+
+    // Show processing state
+    statusEl.textContent = 'Processing local documents…';
+    statusEl.className = 'knowledge-processing-status processing';
+    statusEl.hidden = false;
+
+    const results = await processPendingKnowledgeDocuments();
+    const processed = results.filter((r) => r.status === 'processed').length;
+    const failed = results.filter((r) => r.status === 'failed').length;
+
+    if (failed > 0) {
+      statusEl.textContent = `${processed} document(s) processed, ${failed} failed.`;
+      statusEl.className = 'knowledge-processing-status error';
+    } else if (processed > 0) {
+      statusEl.textContent = `${processed} document(s) processed. Local documents ready.`;
+      statusEl.className = 'knowledge-processing-status ready';
+    } else {
+      statusEl.textContent = 'Local documents ready';
+      statusEl.className = 'knowledge-processing-status ready';
+    }
+
+    // Auto-hide ready state after a delay
+    setTimeout(() => {
+      statusEl.hidden = true;
+    }, 6000);
+
+    // Refresh document list and usage after processing
+    await loadAndRender();
+  } catch {
+    // Processing failure should not break the panel
+    console.warn('[knowledge] Backfill processing encountered an issue.');
+  }
 }

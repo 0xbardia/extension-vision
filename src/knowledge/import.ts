@@ -16,8 +16,10 @@
  */
 
 import type { KnowledgeDocumentRecord, KnowledgeImportResult, KnowledgeSettings } from './types';
+import { KNOWLEDGE_PROCESSING_VERSION } from './types';
 import { KnowledgeError } from './errors';
 import { findDocumentByContentHash, createDocumentWithChunks } from './repository';
+import { chunkDocument } from './chunking';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -241,7 +243,7 @@ export function buildKnowledgeDocumentRecord(
     updatedAt: now,
     enabled: true,
     contentHash,
-    processingVersion: 1,
+    processingVersion: KNOWLEDGE_PROCESSING_VERSION,
     content: normalizedContent,
   };
 }
@@ -446,9 +448,21 @@ export async function importSingleFile(
     buffer.byteLength,
   );
 
-  // Step 9: Persist — zero chunks
+  // Step 9: Generate chunks deterministically
+  let chunks;
   try {
-    await createDocumentWithChunks(document, []);
+    chunks = chunkDocument(document.id, document.content);
+  } catch (err) {
+    return {
+      status: 'failed',
+      fileName,
+      reason: err instanceof KnowledgeError ? err.message : 'Failed to chunk document.',
+    };
+  }
+
+  // Step 10: Persist atomically with chunks
+  try {
+    await createDocumentWithChunks(document, chunks);
   } catch (err) {
     return {
       status: 'failed',

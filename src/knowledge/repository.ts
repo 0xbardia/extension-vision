@@ -80,6 +80,133 @@ export async function createDocumentWithChunks(
 }
 
 /**
+ * Atomically replace all chunks for a document and update its processing version.
+ *
+ * Within a single readwrite transaction:
+ * 1. Load and validate the document.
+ * 2. Delete all existing chunks for the document.
+ * 3. Insert all new chunks.
+ * 4. Update the document's processingVersion.
+ *
+ * If any step fails, the entire transaction rolls back:
+ * - Old document record remains unchanged
+ * - Old chunks remain intact
+ * - No partial new chunk set remains
+ */
+export async function replaceDocumentChunks(
+  documentId: string,
+  newChunks: KnowledgeChunkRecord[],
+  newProcessingVersion: number,
+): Promise<void> {
+  // Validate new chunks before touching storage
+  for (const chunk of newChunks) {
+    validateChunkRecord(chunk, 'replaceDocumentChunks');
+    if (chunk.documentId !== documentId) {
+      throw new KnowledgeError(
+        'KNOWLEDGE_VALIDATION_FAILED',
+        `Chunk ${chunk.id} documentId does not match target document id ${documentId}`,
+      );
+    }
+  }
+
+  const db = await openKnowledgeDatabase();
+
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(['documents', 'chunks'], 'readwrite');
+    const docStore = tx.objectStore('documents');
+    const chunkStore = tx.objectStore('chunks');
+    const chunkIndex = chunkStore.index('documentId');
+
+    // Step 1: Load the document
+    const getReq = docStore.get(documentId);
+    getReq.onerror = () => {
+      reject(
+        new KnowledgeError(
+          'KNOWLEDGE_STORAGE_FAILURE',
+          'Failed to read document for replacement.',
+          getReq.error?.message,
+        ),
+      );
+    };
+
+    getReq.onsuccess = () => {
+      const doc = getReq.result as KnowledgeDocumentRecord | undefined;
+      if (!doc) {
+        reject(
+          new KnowledgeError(
+            'KNOWLEDGE_DOCUMENT_NOT_FOUND',
+            `Document ${documentId} not found for replacement.`,
+          ),
+        );
+        return;
+      }
+
+      // Step 2: Delete existing chunks via cursor
+      const deleteCursorReq = chunkIndex.openCursor(documentId);
+      deleteCursorReq.onsuccess = () => {
+        const cursor = deleteCursorReq.result;
+        if (cursor) {
+          cursor.delete();
+          cursor.continue();
+        }
+      };
+      deleteCursorReq.onerror = () => {
+        reject(
+          new KnowledgeError(
+            'KNOWLEDGE_STORAGE_FAILURE',
+            'Failed to delete existing chunks.',
+            deleteCursorReq.error?.message,
+          ),
+        );
+      };
+
+      // Step 3: Insert all new chunks
+      for (const chunk of newChunks) {
+        const addReq = chunkStore.add(chunk);
+        addReq.onerror = () => {
+          tx.abort();
+          reject(
+            new KnowledgeError(
+              addReq.error?.name === 'ConstraintError'
+                ? 'KNOWLEDGE_DUPLICATE_CHUNK_POSITION'
+                : 'KNOWLEDGE_STORAGE_FAILURE',
+              `Failed to insert chunk ${chunk.id}.`,
+              addReq.error?.message,
+            ),
+          );
+        };
+      }
+
+      // Step 4: Update document processingVersion
+      doc.processingVersion = newProcessingVersion;
+      doc.updatedAt = Date.now();
+      const updateReq = docStore.put(doc);
+      updateReq.onerror = () => {
+        reject(
+          new KnowledgeError(
+            'KNOWLEDGE_STORAGE_FAILURE',
+            'Failed to update document processing version.',
+            updateReq.error?.message,
+          ),
+        );
+      };
+    };
+
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(mapTransactionError(tx.error));
+    tx.onabort = () => {
+      reject(
+        new KnowledgeError(
+          'KNOWLEDGE_TRANSACTION_ABORTED',
+          'Document chunk replacement was aborted.',
+          tx.error?.message,
+        ),
+      );
+    };
+  });
+}
+
+/**
  * Retrieve a single document by its id.
  * Throws KNOWLEDGE_CORRUPTED_RECORD if the stored record fails validation.
  */
@@ -357,6 +484,53 @@ export async function getChunksForDocument(documentId: string): Promise<Knowledg
         new KnowledgeError(
           'KNOWLEDGE_STORAGE_FAILURE',
           'Failed to read chunks.',
+          req.error?.message,
+        ),
+      );
+    };
+  });
+}
+
+/**
+ * Get chunks for multiple documents in a single IndexedDB transaction.
+ * More efficient than calling getChunksForDocument per document.
+ */
+export async function getChunksForDocuments(
+  documentIds: string[],
+): Promise<KnowledgeChunkRecord[]> {
+  if (documentIds.length === 0) return [];
+  const idSet = new Set(documentIds);
+  const db = await openKnowledgeDatabase();
+
+  return new Promise<KnowledgeChunkRecord[]>((resolve, reject) => {
+    const tx = db.transaction('chunks', 'readonly');
+    const store = tx.objectStore('chunks');
+    const req = store.openCursor();
+
+    const chunks: KnowledgeChunkRecord[] = [];
+
+    req.onsuccess = () => {
+      const cursor = req.result;
+      if (cursor) {
+        if (idSet.has(cursor.value.documentId)) {
+          try {
+            validateChunkRecord(cursor.value, 'getChunksForDocuments');
+            chunks.push(cursor.value);
+          } catch {
+            // Skip corrupted chunks
+          }
+        }
+        cursor.continue();
+      } else {
+        resolve(chunks);
+      }
+    };
+
+    req.onerror = () => {
+      reject(
+        new KnowledgeError(
+          'KNOWLEDGE_STORAGE_FAILURE',
+          'Failed to read chunks for documents.',
           req.error?.message,
         ),
       );
