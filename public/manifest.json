@@ -1,21 +1,41 @@
 {
   "manifest_version": 3,
   "name": "Extension Vision",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A Chrome Manifest V3 AI Vision extension for screenshot analysis in the Chrome Side Panel.",
   "minimum_chrome_version": "116",
-  "permissions": ["activeTab", "storage", "sidePanel", "tabs"],
-  "host_permissions": ["<all_urls>", "https://openrouter.ai/*", "https://api.openai.com/*"],
-  "background": { "service_worker": "service-worker.js", "type": "module" },
-  "action": { "default_title": "Open Extension Vision" },
-  "side_panel": { "default_path": "src/sidepanel/sidepanel.html" },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "sidePanel",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "https://openrouter.ai/*",
+    "https://api.openai.com/*"
+  ],
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Open Extension Vision"
+  },
+  "side_panel": {
+    "default_path": "src/sidepanel/sidepanel.html"
+  },
   "commands": {
     "solve-visible-page": {
-      "suggested_key": { "default": "Alt+Q" },
+      "suggested_key": {
+        "default": "Alt+Q"
+      },
       "description": "Solve the visible page"
     }
   },
-  "content_security_policy": { "extension_pages": "script-src 'self'; object-src 'self'" },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "icons": {
     "16": "icons/icon-16.svg",
     "32": "icons/icon-32.svg",
