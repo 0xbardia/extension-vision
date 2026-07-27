@@ -80,8 +80,12 @@
             </label>
           </div>
           <p class="knowledge-privacy-notice">
-            When enabled, relevant excerpts may be included in AI requests.
+            Files are stored and searched locally. When enabled, only relevant excerpts may be
+            included in the active AI request.
           </p>
+          <div id="knowledgeSolveUsage" class="knowledge-solve-usage" hidden>
+            <span id="knowledgeSolveUsageLabel"></span>
+          </div>
           <div class="knowledge-controls">
             <button id="knowledgeImportBtn" type="button" class="primary">Import .txt</button>
             <input id="knowledgeFileInput" type="file" accept=".txt,text/plain" multiple hidden />
@@ -94,12 +98,46 @@
           ></div>
           <div id="knowledgeUsage" class="knowledge-usage"></div>
           <div id="knowledgeDocCount" class="knowledge-doc-count"></div>
+          <div
+            id="knowledgeProgress"
+            class="knowledge-progress"
+            hidden
+            role="progressbar"
+            aria-label="Storage usage"
+          >
+            <div id="knowledgeProgressFill" class="knowledge-progress-fill"></div>
+          </div>
           <div id="knowledgeEmpty" class="knowledge-empty">
             <p>No local documents yet.</p>
-            <p>Import a UTF-8 .txt file to begin.</p>
+            <p>Import .txt files to let Solve use relevant excerpts from your own notes.</p>
           </div>
           <div id="knowledgeDocList" class="knowledge-doc-list"></div>
           <div id="knowledgeProcessingStatus" class="knowledge-processing-status" hidden></div>
+          <div id="knowledgeDeleteAllContainer" class="knowledge-delete-all-container" hidden>
+            <button id="knowledgeDeleteAll" type="button" class="destructive">
+              Delete all documents
+            </button>
+          </div>
+          <div
+            id="knowledgeDeleteAllDialog"
+            class="knowledge-delete-all-dialog"
+            hidden
+            role="alertdialog"
+            aria-labelledby="deleteAllTitle"
+            aria-describedby="deleteAllDesc"
+          >
+            <p id="deleteAllTitle" class="dialog-title">Delete all Local Knowledge?</p>
+            <p id="deleteAllDesc" class="dialog-desc">
+              This permanently removes all imported documents and their processed chunks from this
+              browser.
+            </p>
+            <div class="dialog-actions">
+              <button id="knowledgeDeleteAllCancel" type="button">Cancel</button>
+              <button id="knowledgeDeleteAllConfirm" type="button" class="destructive">
+                Delete all
+              </button>
+            </div>
+          </div>
         </div>
       </section>
       <section aria-labelledby="solve-title">
@@ -132,7 +170,7 @@
           <p id="metadata"></p>
         </article>
         <article id="error" class="error" hidden>
-          <strong>Couldn’t solve this page</strong>
+          <strong>Couldn't solve this page</strong>
           <p id="errorText"></p>
           <button id="retry" type="button">Retry</button>
           <details>

@@ -515,3 +515,175 @@ input[type='checkbox']:focus-visible + .toggle-switch {
   background: color-mix(in oklch, var(--primary) 8%, transparent);
   color: var(--muted);
 }
+
+/* ── Usage Summary ────────────────────────────────────────────── */
+
+.knowledge-usage {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 4px 0;
+}
+
+.knowledge-doc-count {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 2px 0 4px;
+}
+
+/* ── Progress Bar ─────────────────────────────────────────────── */
+
+.knowledge-progress {
+  height: 6px;
+  background: color-mix(in oklch, var(--line) 30%, transparent);
+  border-radius: 3px;
+  margin: 4px 0 8px;
+  overflow: hidden;
+}
+
+.knowledge-progress-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 3px;
+  min-width: 2px;
+  color: transparent;
+  font-size: 0;
+  transition: width 0.3s ease;
+}
+
+/* ── Document Rows ────────────────────────────────────────────── */
+
+.knowledge-doc-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 6px;
+  border-bottom: 1px solid color-mix(in oklch, var(--line) 30%, transparent);
+  gap: 6px;
+}
+
+.knowledge-doc-item:last-child {
+  border-bottom: none;
+}
+
+.knowledge-doc-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.knowledge-doc-info-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.knowledge-doc-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.knowledge-doc-name {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+.knowledge-doc-status {
+  font-size: 10px;
+  color: var(--success);
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: color-mix(in oklch, var(--success) 10%, transparent);
+}
+
+.knowledge-doc-status-failed {
+  color: var(--danger);
+  background: color-mix(in oklch, var(--danger) 10%, transparent);
+}
+
+.knowledge-doc-meta {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.knowledge-doc-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Solve Usage Indicator ─────────────────────────────────────────── */
+
+.knowledge-solve-usage {
+  font-size: 11px;
+  margin: 6px 0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: color-mix(in oklch, var(--primary) 6%, transparent);
+  color: var(--muted);
+}
+
+.knowledge-solve-usage.warning {
+  background: color-mix(in oklch, var(--danger) 6%, transparent);
+  color: var(--danger);
+}
+
+/* ── Delete All ───────────────────────────────────────────────── */
+
+.knowledge-delete-all-container {
+  margin: 8px 0 4px;
+}
+
+button.destructive {
+  color: var(--danger);
+  border-color: color-mix(in oklch, var(--danger) 30%, var(--line));
+  width: 100%;
+  font-size: 12px;
+}
+
+button.destructive:hover {
+  border-color: var(--danger);
+  background: color-mix(in oklch, var(--danger) 8%, transparent);
+}
+
+.knowledge-delete-all-dialog {
+  background: var(--bg);
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+}
+
+.knowledge-delete-all-dialog .dialog-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+.knowledge-delete-all-dialog .dialog-desc {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.knowledge-delete-all-dialog .dialog-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.knowledge-delete-all-dialog .dialog-actions button {
+  padding: 6px 14px;
+  font-size: 12px;
+}
+
+/* ── Empty State ───────────────────────────────────────────────── */
+
+.knowledge-empty p:first-child {
+  margin-bottom: 2px;
+}

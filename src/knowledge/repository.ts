@@ -445,6 +445,46 @@ export async function deleteDocumentCascade(id: string): Promise<void> {
 }
 
 /**
+ * Delete all documents and their chunks in a single atomic transaction.
+ * Also clears the meta store. Settings are preserved.
+ * Returns the number of documents deleted.
+ */
+export async function deleteAllDocumentsCascade(): Promise<number> {
+  const db = await openKnowledgeDatabase();
+
+  return new Promise<number>((resolve, reject) => {
+    const tx = db.transaction(['documents', 'chunks', 'meta'], 'readwrite');
+    const docStore = tx.objectStore('documents');
+    const chunkStore = tx.objectStore('chunks');
+    const metaStore = tx.objectStore('meta');
+
+    let docCount = 0;
+    const countReq = docStore.count();
+    countReq.onsuccess = () => {
+      docCount = countReq.result;
+    };
+
+    docStore.clear();
+
+    chunkStore.clear();
+
+    metaStore.clear();
+
+    tx.oncomplete = () => resolve(docCount);
+    tx.onerror = () => reject(mapTransactionError(tx.error));
+    tx.onabort = () => {
+      reject(
+        new KnowledgeError(
+          'KNOWLEDGE_TRANSACTION_ABORTED',
+          'Bulk deletion was aborted.',
+          tx.error?.message,
+        ),
+      );
+    };
+  });
+}
+
+/**
  * Get all chunks for a document, ordered by index ascending then id ascending.
  * Corrupted chunk records are silently skipped.
  */

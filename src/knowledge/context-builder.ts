@@ -86,7 +86,7 @@ export async function buildKnowledgeContext(
     const retrievalResult = await Promise.race([retrievalPromise, timeoutPromise]);
 
     if (!retrievalResult) {
-      return emptyResult('unavailable', started, 'timeout');
+      return emptyResult('timeout', started, 'timeout');
     }
 
     if (retrievalResult.reason === 'knowledge-disabled') {

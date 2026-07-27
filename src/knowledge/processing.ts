@@ -12,7 +12,12 @@ import type {
 } from './types';
 import { KNOWLEDGE_PROCESSING_VERSION } from './types';
 import { KnowledgeError } from './errors';
-import { listDocuments, getChunksForDocument, replaceDocumentChunks } from './repository';
+import {
+  listDocuments,
+  getDocument,
+  getChunksForDocument,
+  replaceDocumentChunks,
+} from './repository';
 import { chunkDocument, documentNeedsProcessing } from './chunking';
 
 let processingInProgress = false;
@@ -27,7 +32,6 @@ export async function processKnowledgeDocument(
   documentId: string,
 ): Promise<KnowledgeProcessingResult> {
   try {
-    const { getDocument } = await import('./repository');
     const doc = await getDocument(documentId);
     if (!doc) {
       return {
@@ -62,11 +66,14 @@ export async function processKnowledgeDocument(
       chunkCount: newChunks.length,
     };
   } catch (err) {
+    // Never expose raw error details to the UI
+    const safeMessage =
+      err instanceof KnowledgeError ? err.message : 'Processing failed. Try again.';
     return {
       status: 'failed',
       documentId,
       errorCode: err instanceof KnowledgeError ? err.code : 'KNOWLEDGE_PROCESSING_FAILED',
-      message: err instanceof Error ? err.message : 'Processing failed.',
+      message: safeMessage,
     };
   }
 }

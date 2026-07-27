@@ -10,6 +10,8 @@ import { openPanelFromUserGesture } from './command-flow';
 import { buildFinalPrompt } from '../prompt/default-prompt';
 import { PRESETS } from '../prompt/presets';
 import { buildKnowledgeContext } from '../knowledge/context-builder';
+import { SOLVE_KNOWLEDGE_USAGE_EVENT } from '../knowledge/types';
+import type { KnowledgeSolveUsageMessage } from '../knowledge/types';
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
 let activeController: AbortController | undefined;
 chrome.commands.onCommand.addListener((command, tab) => {
@@ -157,6 +159,19 @@ async function startSolve(options: { preferredTab?: chrome.tabs.Tab } = {}) {
         characterCount: context.characterCount,
         buildDurationMs: Math.round(performance.now() - knowledgeStartedAt),
       };
+
+      // Send Solve usage event to Side Panel (non-blocking — must not delay provider)
+      const usageStatus = context.status === 'included' ? 'used' : context.status;
+      void sendSolveKnowledgeUsage({
+        type: SOLVE_KNOWLEDGE_USAGE_EVENT,
+        status: usageStatus as KnowledgeSolveUsageMessage['status'],
+        requestId,
+        included: context.status === 'included',
+        sourceCount: context.sourceCount,
+        chunkCount: context.chunkCount,
+        characterCount: context.characterCount,
+        buildDurationMs: knowledgeMeta.buildDurationMs,
+      });
     } catch {
       // Knowledge failure never breaks Solve
       knowledgeMeta = {
@@ -167,6 +182,16 @@ async function startSolve(options: { preferredTab?: chrome.tabs.Tab } = {}) {
         characterCount: 0,
         buildDurationMs: 0,
       };
+      void sendSolveKnowledgeUsage({
+        type: SOLVE_KNOWLEDGE_USAGE_EVENT,
+        status: 'failed',
+        requestId,
+        included: false,
+        sourceCount: 0,
+        chunkCount: 0,
+        characterCount: 0,
+        buildDurationMs: 0,
+      });
     }
 
     // ── Provider request ─────────────────────────────────────────
@@ -232,5 +257,18 @@ async function startSolve(options: { preferredTab?: chrome.tabs.Tab } = {}) {
       });
       log('state stored');
     }
+  }
+}
+
+/**
+ * Send a Solve knowledge usage event to the Side Panel.
+ * This is a fire-and-forget message — failure to deliver does not
+ * affect the Solve flow. Uses broadcast to reach any open side panel.
+ */
+async function sendSolveKnowledgeUsage(msg: KnowledgeSolveUsageMessage): Promise<void> {
+  try {
+    await chrome.runtime.sendMessage(msg);
+  } catch {
+    // Side panel may be closed — ignore
   }
 }

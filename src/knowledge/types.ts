@@ -180,7 +180,7 @@ export interface KnowledgeRetrievalResult {
 // ─── Context Builder Types ──────────────────────────────────────────
 
 export type KnowledgeContextStatus =
-  'included' | 'disabled' | 'no-query' | 'no-match' | 'unavailable' | 'failed';
+  'included' | 'disabled' | 'no-query' | 'no-match' | 'unavailable' | 'failed' | 'timeout';
 
 export interface KnowledgeContextResult {
   status: KnowledgeContextStatus;
@@ -201,3 +201,28 @@ export interface SolveKnowledgeMetadata {
   characterCount: number;
   buildDurationMs: number;
 }
+
+// ─── Solve Usage Message ────────────────────────────────────────────
+
+export const SOLVE_KNOWLEDGE_USAGE_EVENT = 'knowledge-solve-usage';
+
+export type KnowledgeSolveUsageStatus =
+  'used' | 'disabled' | 'no-query' | 'no-match' | 'unavailable' | 'failed' | 'timeout';
+
+export interface KnowledgeSolveUsageMessage {
+  type: typeof SOLVE_KNOWLEDGE_USAGE_EVENT;
+  status: KnowledgeSolveUsageStatus;
+  requestId: string;
+  included: boolean;
+  sourceCount: number;
+  chunkCount: number;
+  characterCount: number;
+  buildDurationMs: number;
+}
+
+// ─── UI State Types ─────────────────────────────────────────────────
+
+export type KnowledgeUiState =
+  'disabled' | 'empty' | 'ready' | 'processing' | 'partial-failure' | 'unavailable';
+
+export type KnowledgeDocumentUiState = 'ready' | 'processing' | 'failed' | 'disabled';
